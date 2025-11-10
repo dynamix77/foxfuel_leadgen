@@ -31,8 +31,21 @@ def read_data_file(file_path: Union[str, Path]) -> pd.DataFrame:
     try:
         if suffix == ".csv":
             df = pd.read_csv(file_path, low_memory=False)
-        elif suffix in [".xlsx", ".xls"]:
+        elif suffix == ".xlsx":
+            # New Excel format - use openpyxl
             df = pd.read_excel(file_path, engine="openpyxl")
+        elif suffix == ".xls":
+            # Old Excel format - use xlrd
+            try:
+                df = pd.read_excel(file_path, engine="xlrd")
+            except Exception as xlrd_error:
+                # If xlrd fails, try openpyxl in case file is misnamed
+                logger.warning(f"xlrd failed for {file_path}, trying openpyxl: {xlrd_error}")
+                try:
+                    df = pd.read_excel(file_path, engine="openpyxl")
+                except Exception:
+                    # Re-raise original xlrd error
+                    raise xlrd_error
         else:
             raise ValueError(f"Unsupported file format: {suffix}")
         
