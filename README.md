@@ -52,7 +52,19 @@ All configuration is managed through `src/config.py` using Pydantic BaseSettings
 - Cache: `./cache`
 - Output: `./out`
 
-## Usage
+## Quick Start (GUI)
+
+**For non-technical users:** Double-click `run_gui.bat` to launch the graphical interface.
+
+The GUI provides:
+- Easy file selection (browse buttons)
+- One-click job execution
+- Real-time status and logs
+- No command-line knowledge required
+
+See [User Manual](docs/user_manual.md) for detailed instructions.
+
+## Usage (Command Line)
 
 ### PA Tanks Ingestion
 

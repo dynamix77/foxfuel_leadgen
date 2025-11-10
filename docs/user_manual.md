@@ -79,6 +79,25 @@ All Python dependencies are listed in `requirements.txt` and will be installed a
 
 ### 2.2 Installation Steps
 
+#### Option A: Using the GUI (Recommended for Non-Technical Users)
+
+After installation, you can use the graphical interface:
+
+1. **Launch the GUI:**
+   - **Windows:** Double-click `run_gui.bat` in the project folder
+   - **Or:** Right-click `run_gui.ps1` and select "Run with PowerShell"
+
+2. **The GUI provides:**
+   - File browser buttons to select input files
+   - Checkboxes for options (skip geocoding, generate QA report)
+   - Buttons to run each job (Build Universe, Rescore, Export, CRM Sync)
+   - Real-time status log showing progress
+   - No command-line knowledge required
+
+3. **See [GUI Usage Guide](#gui-usage) below for detailed instructions.**
+
+#### Option B: Command Line (For Advanced Users)
+
 #### Step 1: Clone or Download the Repository
 
 If you have Git installed:
@@ -406,6 +425,61 @@ python -m src.jobs.build_universe \
 ---
 
 ## 5. Running the System
+
+### 5.0 GUI Usage (Recommended)
+
+The GUI makes it easy to run all system functions without using the command line.
+
+#### Launching the GUI
+
+**Windows:**
+- Double-click `run_gui.bat` in the project folder
+- Or right-click `run_gui.ps1` and select "Run with PowerShell"
+
+**What You'll See:**
+- **File Selection Section:** Browse buttons to select your input files
+- **Options Section:** Checkboxes for common settings
+- **Actions Section:** Buttons to run each job
+- **Status & Log Section:** Real-time progress and results
+
+#### Step-by-Step Workflow
+
+**1. Select Your Files:**
+- Click "Browse..." next to "PA Storage Tanks File" and select your PA DEP file
+- Click "Browse..." next to "NAICS Data File" and select your NAICS CSV (if available)
+- The "Maps Extractor Folder" is pre-set to `./data/maps_extractor` (you can change it if needed)
+
+**2. Configure Options:**
+- **Counties:** Pre-filled with Southeast PA counties (you can modify if needed)
+- **Skip Geocoding:** Check this if you're using CodeCanyon Maps Extractor (recommended)
+- **Generate QA Report:** Check this to get a data quality report after build
+
+**3. Run Build Universe:**
+- Click "1. Build Universe (Import & Process Data)"
+- Watch the status log for progress
+- Wait for "completed successfully" message
+
+**4. (Optional) Rescore Leads:**
+- Click "2. Rescore Leads" to update scores
+
+**5. Export for Power BI:**
+- Click "3. Export for Power BI" to generate CSV and GeoJSON files
+
+**6. Sync to CRM:**
+- First, click "4. Sync to Bigin CRM (Dry Run)" to preview what will be synced
+- If everything looks good, click "5. Sync to Bigin CRM (Live)" to actually sync
+
+**7. Rename Maps Files:**
+- If you saved a new `organizations.csv` from CodeCanyon tool, click "Rename Maps Files" to avoid overwrite conflicts
+
+#### Tips for GUI Users
+
+- **Status Log:** Always check the status log at the bottom for progress and any errors
+- **File Paths:** The GUI remembers your file selections between sessions
+- **Multiple Runs:** You can run jobs multiple times - each run creates new timestamped output files
+- **Output Files:** All output files are saved to the `./out` folder (you can open this folder in Windows Explorer)
+
+### 5.1 Build Universe Workflow (Command Line)
 
 ### 5.1 Build Universe Workflow
 
