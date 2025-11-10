@@ -2,6 +2,8 @@
 
 A Python-based lead generation pipeline for a fuel distributor in Southeast Pennsylvania. The system ingests data from multiple sources, normalizes and deduplicates entities, scores leads, and syncs to Bigin CRM.
 
+**📖 [Complete User Manual](docs/user_manual.md)** - Comprehensive guide covering installation, configuration, usage, and troubleshooting.
+
 ## Features
 
 - **PA DEP Storage Tank Ingestion**: Robust header mapping with fuzzy matching, diesel/status classification, capacity bucketing, and geocoding
