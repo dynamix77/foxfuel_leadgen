@@ -166,6 +166,8 @@ COUNTIES=Bucks,Montgomery,Philadelphia,Chester,Delaware
 
 **Note:** The Google Maps API key is optional if you're using the CodeCanyon Google Maps scraper, which provides coordinates directly.
 
+**See [API Key Registration Guide](#api-key-registration) below for detailed instructions on obtaining these keys.**
+
 #### Verify Installation
 
 Run the test suite to verify everything is working:
@@ -1024,23 +1026,136 @@ The system automatically detects and creates custom fields on first run. To manu
 - Retail_Commercial
 - Unknown
 
-#### Google Maps API
+#### API Key Registration
 
-**Getting API Key:**
+##### Google Maps API Key (Optional)
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create project or select existing
-3. Enable "Geocoding API"
-4. Create API key
-5. Restrict key to Geocoding API only
-6. Add to `.env` file
+**When Needed:** Only required if you want to geocode addresses. Not needed if using CodeCanyon Google Maps scraper (which provides coordinates).
 
-**Quota Management:**
+**Step-by-Step Registration:**
 
-- Free tier: $200 credit/month
-- Geocoding: $5 per 1,000 requests
-- Use caching to minimize API calls
-- Monitor usage in Cloud Console
+1. **Go to Google Cloud Console**
+   - Visit: https://console.cloud.google.com/
+   - Sign in with your Google account
+
+2. **Create or Select a Project**
+   - Click the project dropdown at the top
+   - Click "New Project" or select an existing project
+   - Enter project name (e.g., "Foxfuel Lead Gen")
+   - Click "Create"
+
+3. **Enable Geocoding API**
+   - In the left menu, go to "APIs & Services" → "Library"
+   - Search for "Geocoding API"
+   - Click on "Geocoding API"
+   - Click "Enable"
+
+4. **Create API Key**
+   - Go to "APIs & Services" → "Credentials"
+   - Click "Create Credentials" → "API Key"
+   - Your API key will be displayed
+   - **Important:** Copy the key immediately (you won't be able to see it again)
+
+5. **Restrict API Key (Recommended for Security)**
+   - Click "Restrict Key" button
+   - Under "API restrictions":
+     - Select "Restrict key"
+     - Check only "Geocoding API"
+   - Under "Application restrictions" (optional but recommended):
+     - Select "IP addresses" for server-side usage
+     - Add your server IP addresses
+   - Click "Save"
+
+6. **Add to .env File**
+   ```env
+   GOOGLE_MAPS_API_KEY=AIzaSyYourActualKeyHere123456789
+   ```
+
+**Quota and Pricing:**
+
+- **Free Tier:** $200 credit per month (new accounts)
+- **Geocoding Cost:** $5.00 per 1,000 requests
+- **Free Requests:** 40,000 requests/month with $200 credit
+- **Caching:** System caches results to minimize API calls
+- **Monitoring:** Check usage in Cloud Console → "APIs & Services" → "Dashboard"
+
+**Troubleshooting:**
+
+- **"API key not valid"**: Verify key is copied correctly, check API restrictions
+- **"Quota exceeded"**: Wait for quota reset or upgrade billing account
+- **"Geocoding API not enabled"**: Enable the API in Cloud Console
+
+##### Bigin CRM Access Token
+
+**When Needed:** Required for syncing leads to Bigin CRM.
+
+**Step-by-Step Registration:**
+
+1. **Log into Bigin CRM**
+   - Visit your Bigin CRM instance (e.g., https://yourcompany.bigin.com)
+   - Log in with your administrator account
+
+2. **Navigate to Developer Settings**
+   - Click your profile icon (top right)
+   - Go to "Settings" → "Developer Settings"
+   - Or navigate directly to: Settings → Developer Settings
+
+3. **Generate Access Token**
+   - Look for "Access Tokens" or "API Tokens" section
+   - Click "Generate Token" or "Create Token"
+   - Enter a token name (e.g., "Foxfuel Lead Gen Integration")
+   - Select scopes/permissions:
+     - `Accounts` - Read and Write
+     - `Contacts` - Read and Write
+     - `Deals` - Read and Write
+     - `Custom Fields` - Read and Write (if available)
+   - Click "Generate" or "Create"
+
+4. **Copy Access Token**
+   - The token will be displayed once
+   - **Important:** Copy it immediately (you won't be able to see it again)
+   - Format is typically: `Bearer xxxxxx...` or just `xxxxxx...`
+
+5. **Add to .env File**
+   ```env
+   BIGIN_ACCESS_TOKEN=your_token_here
+   ```
+   - If token includes "Bearer " prefix, include it in the .env file
+
+**Alternative Method (If Developer Settings Not Available):**
+
+1. **Contact Bigin Support**
+   - Some Bigin instances require admin to enable API access
+   - Request API access token generation
+   - Provide use case: "Lead generation system integration"
+
+2. **OAuth Flow (Advanced)**
+   - If OAuth is required, you'll need:
+     - Client ID
+     - Client Secret
+     - Authorization code
+   - See Bigin API documentation for OAuth flow
+
+**Token Security:**
+
+- **Never commit tokens to version control**
+- Store in `.env` file (already in `.gitignore`)
+- Rotate tokens periodically (every 90 days recommended)
+- Revoke old tokens when generating new ones
+
+**Testing Your Token:**
+
+```bash
+# Test Bigin connection (dry-run)
+python -m src.jobs.push_to_bigin --dry-run --limit 1
+```
+
+**Troubleshooting:**
+
+- **"Invalid token"**: Verify token is copied correctly, check for extra spaces
+- **"Unauthorized"**: Token may have expired, generate new token
+- **"Insufficient permissions"**: Ensure token has required scopes
+- **"API endpoint not found"**: Verify Bigin instance URL is correct
 
 ### 9.4 Automation and Scheduling
 
