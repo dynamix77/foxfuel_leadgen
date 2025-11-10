@@ -283,11 +283,29 @@ class FoxfuelGUI:
         self.run_command(["src.jobs.push_to_bigin", "--dry-run", "--limit", "5"], "CRM Sync (Dry Run)")
     
     def run_crm_sync(self):
-        """Run live CRM sync."""
-        if not messagebox.askyesno("Confirm", "This will sync leads to Bigin CRM. Continue?"):
+        """Run live CRM sync with review dialog."""
+        from src.gui.sync_review import SyncReviewDialog
+        
+        # Show review dialog
+        review_dialog = SyncReviewDialog(self.root)
+        selected_ids = review_dialog.show()
+        
+        if not selected_ids:
             return
-        # Default is now False (live sync), so no flag needed
-        self.run_command(["src.jobs.push_to_bigin"], "CRM Sync (Live)")
+        
+        if not messagebox.askyesno(
+            "Confirm Sync",
+            f"This will sync {len(selected_ids)} selected records to Bigin CRM.\n\nContinue?"
+        ):
+            return
+        
+        # Build command with selected IDs
+        # We'll need to modify push_to_bigin to accept entity IDs
+        ids_str = ",".join(selected_ids)
+        self.run_command(
+            ["src.jobs.push_to_bigin", "--entity-ids", ids_str],
+            f"CRM Sync (Live) - {len(selected_ids)} records"
+        )
     
     def rename_maps_files(self):
         """Rename maps extractor files."""

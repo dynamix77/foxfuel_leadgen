@@ -76,6 +76,11 @@ def main():
         type=int,
         help="Limit number of records to process"
     )
+    parser.add_argument(
+        "--entity-ids",
+        type=str,
+        help="Comma-separated list of entity IDs to sync (overrides filters)"
+    )
     args = parser.parse_args()
     
     logger.info("Starting Bigin sync job...")
@@ -84,24 +89,48 @@ def main():
     conn = duckdb.connect(settings.duckdb_path)
     
     # Get entities with scores, filter for Tier A and B
-    limit_clause = f"LIMIT {args.limit}" if args.limit else ""
-    query = f"""
-    SELECT 
-        e.*, 
-        s.score, 
-        s.tier, 
-        s.reason_codes, 
-        s.reason_text,
-        sig_sector.signal_value as sector_primary,
-        e.sector_confidence
-    FROM raw_pa_tanks e
-    LEFT JOIN lead_score s ON e.facility_id = s.entity_id
-    LEFT JOIN signals sig_sector ON CAST(e.facility_id AS VARCHAR) = CAST(sig_sector.entity_id AS VARCHAR) AND sig_sector.signal_type = 'sector'
-    WHERE s.tier IN ('Tier A', 'Tier B')
-    ORDER BY s.score DESC
-    {limit_clause}
-    """
-    entities_df = conn.execute(query).df()
+    if args.entity_ids:
+        # Sync specific entity IDs
+        entity_ids_list = [id.strip() for id in args.entity_ids.split(",")]
+        # Use parameterized query for safety
+        placeholders = ",".join(["?" for _ in entity_ids_list])
+        query = f"""
+        SELECT 
+            e.*, 
+            s.score, 
+            s.tier, 
+            s.reason_codes, 
+            s.reason_text,
+            sig_sector.signal_value as sector_primary,
+            e.sector_confidence
+        FROM raw_pa_tanks e
+        LEFT JOIN lead_score s ON e.facility_id = s.entity_id
+        LEFT JOIN signals sig_sector ON CAST(e.facility_id AS VARCHAR) = CAST(sig_sector.entity_id AS VARCHAR) AND sig_sector.signal_type = 'sector'
+        WHERE e.facility_id IN ({placeholders})
+        ORDER BY s.score DESC
+        """
+        logger.info(f"Syncing specific entity IDs: {len(entity_ids_list)} records")
+        entities_df = conn.execute(query, entity_ids_list).df()
+    else:
+        # Use tier filter
+        limit_clause = f"LIMIT {args.limit}" if args.limit else ""
+        query = f"""
+        SELECT 
+            e.*, 
+            s.score, 
+            s.tier, 
+            s.reason_codes, 
+            s.reason_text,
+            sig_sector.signal_value as sector_primary,
+            e.sector_confidence
+        FROM raw_pa_tanks e
+        LEFT JOIN lead_score s ON e.facility_id = s.entity_id
+        LEFT JOIN signals sig_sector ON CAST(e.facility_id AS VARCHAR) = CAST(sig_sector.entity_id AS VARCHAR) AND sig_sector.signal_type = 'sector'
+        WHERE s.tier IN ('Tier A', 'Tier B')
+        ORDER BY s.score DESC
+        {limit_clause}
+        """
+        entities_df = conn.execute(query).df()
     conn.close()
     
     if entities_df.empty:
