@@ -3,7 +3,7 @@ import json
 import logging
 import pandas as pd
 import duckdb
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from src.config import settings
 from src.score.scorer import score_entities
