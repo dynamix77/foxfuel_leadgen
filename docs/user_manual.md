@@ -154,8 +154,16 @@ Edit `.env` and add your API keys:
 # Google Maps API Key (optional - only needed for geocoding)
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 
-# Bigin CRM Access Token
-BIGIN_ACCESS_TOKEN=your_bigin_token_here
+# Bigin CRM - OAuth (recommended) or Access Token
+# Option 1: OAuth (recommended - automatically refreshes tokens)
+BIGIN_CLIENT_ID=1000.XXXXXXXXXXXXX
+BIGIN_CLIENT_SECRET=your_client_secret_here
+BIGIN_REFRESH_TOKEN=1000.XXXXXXXXXXXXXXXXXXXXXXXX
+BIGIN_BASE_URL=https://www.zohoapis.com/bigin/v2
+
+# Option 2: Direct Access Token (legacy - expires after ~1 hour)
+# BIGIN_ACCESS_TOKEN=your_access_token_here
+# BIGIN_BASE_URL=https://www.zohoapis.com/bigin/v2
 
 # Base address for distance calculations
 BASE_ADDRESS=2450 Old Welsh Road, Willow Grove, PA 19090
@@ -1085,20 +1093,80 @@ The system automatically detects and creates custom fields on first run. To manu
 - **"Quota exceeded"**: Wait for quota reset or upgrade billing account
 - **"Geocoding API not enabled"**: Enable the API in Cloud Console
 
-##### Bigin CRM Access Token
+##### Bigin CRM Authentication (OAuth or Access Token)
 
 **When Needed:** Required for syncing leads to Bigin CRM.
 
-**Step-by-Step Registration:**
+**Two Authentication Methods:**
+
+The system supports both OAuth (recommended) and direct access tokens.
+
+###### Method 1: OAuth (Recommended)
+
+OAuth uses a refresh token to automatically obtain access tokens, which is more secure and doesn't require manual token renewal.
+
+**Step-by-Step OAuth Setup:**
+
+1. **Create Zoho API Application**
+   - Go to https://api-console.zoho.com/
+   - Sign in with your Zoho account
+   - Click "Add Client" or "Create Client"
+   - Select "Server-based Applications"
+   - Enter application details:
+     - Name: "Foxfuel Lead Gen Integration"
+     - Homepage URL: Your website or `https://localhost`
+     - Authorized Redirect URIs: `https://localhost` (or your callback URL)
+   - Click "Create"
+
+2. **Get Client Credentials**
+   - After creation, you'll see:
+     - **Client ID** (e.g., `1000.XXXXXXXXXXXXX`)
+     - **Client Secret** (a long alphanumeric string)
+   - Copy both values
+
+3. **Generate Refresh Token**
+   - In the API Console, click on your client
+   - Go to "Generate Code" or "Generate Refresh Token"
+   - Select scopes:
+     - `Bigin.bigin.accounts.ALL`
+     - `Bigin.bigin.contacts.ALL`
+     - `Bigin.bigin.deals.ALL`
+     - `Bigin.bigin.settings.ALL` (for custom fields)
+   - Click "Generate"
+   - You'll be redirected to authorize the application
+   - After authorization, you'll receive a **Refresh Token**
+
+4. **Get Base URL**
+   - Your Bigin API base URL is typically: `https://www.zohoapis.com/bigin/v2`
+   - Some instances may use different URLs (check your Bigin documentation)
+
+5. **Add to .env File**
+   ```env
+   BIGIN_CLIENT_ID=1000.XXXXXXXXXXXXX
+   BIGIN_CLIENT_SECRET=your_client_secret_here
+   BIGIN_REFRESH_TOKEN=1000.XXXXXXXXXXXXXXXXXXXXXXXX
+   BIGIN_BASE_URL=https://www.zohoapis.com/bigin/v2
+   ```
+
+**How OAuth Works:**
+- System automatically refreshes access tokens when they expire
+- Refresh tokens are long-lived and don't expire (unless revoked)
+- Access tokens are cached and refreshed 5 minutes before expiry
+- No manual token management required
+
+###### Method 2: Direct Access Token (Legacy)
+
+If you already have an access token, you can use it directly (though it will expire and need manual renewal).
+
+**Step-by-Step Access Token Setup:**
 
 1. **Log into Bigin CRM**
-   - Visit your Bigin CRM instance (e.g., https://yourcompany.bigin.com)
+   - Visit your Bigin CRM instance
    - Log in with your administrator account
 
 2. **Navigate to Developer Settings**
    - Click your profile icon (top right)
    - Go to "Settings" → "Developer Settings"
-   - Or navigate directly to: Settings → Developer Settings
 
 3. **Generate Access Token**
    - Look for "Access Tokens" or "API Tokens" section
@@ -1114,36 +1182,24 @@ The system automatically detects and creates custom fields on first run. To manu
 4. **Copy Access Token**
    - The token will be displayed once
    - **Important:** Copy it immediately (you won't be able to see it again)
-   - Format is typically: `Bearer xxxxxx...` or just `xxxxxx...`
 
 5. **Add to .env File**
    ```env
    BIGIN_ACCESS_TOKEN=your_token_here
+   BIGIN_BASE_URL=https://www.zohoapis.com/bigin/v2
    ```
-   - If token includes "Bearer " prefix, include it in the .env file
 
-**Alternative Method (If Developer Settings Not Available):**
-
-1. **Contact Bigin Support**
-   - Some Bigin instances require admin to enable API access
-   - Request API access token generation
-   - Provide use case: "Lead generation system integration"
-
-2. **OAuth Flow (Advanced)**
-   - If OAuth is required, you'll need:
-     - Client ID
-     - Client Secret
-     - Authorization code
-   - See Bigin API documentation for OAuth flow
+**Note:** Access tokens expire (typically after 1 hour). OAuth method is recommended for production use.
 
 **Token Security:**
 
 - **Never commit tokens to version control**
 - Store in `.env` file (already in `.gitignore`)
-- Rotate tokens periodically (every 90 days recommended)
+- Rotate refresh tokens periodically (every 90 days recommended)
 - Revoke old tokens when generating new ones
+- Keep client secret secure (treat like a password)
 
-**Testing Your Token:**
+**Testing Your Configuration:**
 
 ```bash
 # Test Bigin connection (dry-run)
@@ -1152,10 +1208,31 @@ python -m src.jobs.push_to_bigin --dry-run --limit 1
 
 **Troubleshooting:**
 
-- **"Invalid token"**: Verify token is copied correctly, check for extra spaces
-- **"Unauthorized"**: Token may have expired, generate new token
-- **"Insufficient permissions"**: Ensure token has required scopes
-- **"API endpoint not found"**: Verify Bigin instance URL is correct
+- **"Bigin authentication not configured"**: 
+  - For OAuth: Ensure all three (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN) are set
+  - For Access Token: Ensure BIGIN_ACCESS_TOKEN is set
+  
+- **"OAuth token refresh failed"**: 
+  - Verify client ID, secret, and refresh token are correct
+  - Check that refresh token hasn't been revoked
+  - Ensure scopes are correct in Zoho API Console
+  
+- **"Invalid token"**: 
+  - Verify token is copied correctly, check for extra spaces
+  - For access tokens: Token may have expired, generate new token or switch to OAuth
+  
+- **"Unauthorized"**: 
+  - Token may have expired (access tokens expire after ~1 hour)
+  - Refresh token may have been revoked
+  - Check token permissions/scopes
+  
+- **"Insufficient permissions"**: 
+  - Ensure token has required scopes (Accounts, Contacts, Deals, Settings)
+  - Regenerate token with correct scopes
+  
+- **"API endpoint not found"**: 
+  - Verify BIGIN_BASE_URL is correct (typically `https://www.zohoapis.com/bigin/v2`)
+  - Check your Bigin instance documentation for correct API URL
 
 ### 9.4 Automation and Scheduling
 

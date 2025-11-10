@@ -18,7 +18,16 @@ class Settings(BaseSettings):
     
     # API Keys
     google_maps_api_key: str = Field(default="", alias="GOOGLE_MAPS_API_KEY")
+    
+    # Bigin CRM - OAuth (preferred) or Access Token
     bigin_access_token: str = Field(default="", alias="BIGIN_ACCESS_TOKEN")
+    bigin_client_id: str = Field(default="", alias="BIGIN_CLIENT_ID")
+    bigin_client_secret: str = Field(default="", alias="BIGIN_CLIENT_SECRET")
+    bigin_refresh_token: str = Field(default="", alias="BIGIN_REFRESH_TOKEN")
+    bigin_base_url: str = Field(
+        default="https://www.zohoapis.com/bigin/v2",
+        alias="BIGIN_BASE_URL"
+    )
     
     # Base location
     base_address: str = Field(
