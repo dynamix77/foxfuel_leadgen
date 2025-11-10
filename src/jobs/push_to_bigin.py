@@ -1,18 +1,50 @@
 """Push leads to Bigin CRM job."""
 import argparse
+import json
 import logging
 import pandas as pd
 import duckdb
+from datetime import datetime, timezone
+from pathlib import Path
 from src.config import settings
 from src.crm.bigin import BiginClient
 from src.crm.sync import upsert_to_bigin
 from src.crm.sync import is_synced
 from src.crm.payloads import build_account_payload
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Setup structured JSON logging
+log_dir = Path("./logs")
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / "push_to_bigin.log"
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName
+        }
+        if hasattr(record, "duration"):
+            log_entry["duration_seconds"] = record.duration
+        return json.dumps(log_entry)
+
+# Setup file handler with JSON formatter
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(JSONFormatter())
+
+# Setup console handler with standard format
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+# Configure root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,8 +68,8 @@ def main():
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        default=True,
-        help="Dry run mode: print what would be created without calling API (default: True)"
+        default=False,
+        help="Dry run mode: print what would be created without calling API"
     )
     parser.add_argument(
         "--limit",

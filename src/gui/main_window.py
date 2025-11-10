@@ -286,6 +286,7 @@ class FoxfuelGUI:
         """Run live CRM sync."""
         if not messagebox.askyesno("Confirm", "This will sync leads to Bigin CRM. Continue?"):
             return
+        # Default is now False (live sync), so no flag needed
         self.run_command(["src.jobs.push_to_bigin"], "CRM Sync (Live)")
     
     def rename_maps_files(self):
