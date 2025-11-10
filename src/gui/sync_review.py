@@ -94,6 +94,12 @@ class SyncReviewDialog:
         search_entry.pack(side=tk.LEFT, padx=5)
         search_entry.bind("<KeyRelease>", lambda e: self.apply_filters())
         
+        ttk.Label(filter_row2, text="Limit:").pack(side=tk.LEFT, padx=5)
+        self.limit_var = tk.StringVar(value="")
+        limit_entry = ttk.Entry(filter_row2, textvariable=self.limit_var, width=10)
+        limit_entry.pack(side=tk.LEFT, padx=5)
+        limit_entry.bind("<KeyRelease>", lambda e: self.apply_filters())
+        
         # Selection controls
         select_frame = ttk.Frame(main_frame)
         select_frame.pack(fill=tk.X, pady=(0, 10))
@@ -101,6 +107,8 @@ class SyncReviewDialog:
         ttk.Button(select_frame, text="Select All", command=self.select_all).pack(side=tk.LEFT, padx=5)
         ttk.Button(select_frame, text="Deselect All", command=self.deselect_all).pack(side=tk.LEFT, padx=5)
         ttk.Button(select_frame, text="Select Tier A Only", command=self.select_tier_a).pack(side=tk.LEFT, padx=5)
+        ttk.Button(select_frame, text="Select Top 10", command=self.select_top_10).pack(side=tk.LEFT, padx=5)
+        ttk.Button(select_frame, text="Select Top 50", command=self.select_top_50).pack(side=tk.LEFT, padx=5)
         ttk.Button(select_frame, text="Clear Filters", command=self.clear_filters).pack(side=tk.LEFT, padx=5)
         
         self.count_label = ttk.Label(select_frame, text="0 records selected")
@@ -261,6 +269,16 @@ class SyncReviewDialog:
             )
             df = df[mask]
         
+        # Limit filter
+        limit_str = self.limit_var.get().strip()
+        if limit_str:
+            try:
+                limit = int(limit_str)
+                if limit > 0:
+                    df = df.head(limit)
+            except ValueError:
+                pass  # Invalid limit, ignore
+        
         self.filtered_records = df
         self.refresh_table()
         
@@ -344,6 +362,18 @@ class SyncReviewDialog:
         self.selected_ids.update(tier_a_ids)
         self.refresh_table()
     
+    def select_top_10(self):
+        """Select top 10 records by score."""
+        top_10_ids = set(self.filtered_records.head(10)["facility_id"].astype(str))
+        self.selected_ids.update(top_10_ids)
+        self.refresh_table()
+    
+    def select_top_50(self):
+        """Select top 50 records by score."""
+        top_50_ids = set(self.filtered_records.head(50)["facility_id"].astype(str))
+        self.selected_ids.update(top_50_ids)
+        self.refresh_table()
+    
     def clear_filters(self):
         """Clear all filters."""
         self.tier_var.set("All")
@@ -352,6 +382,7 @@ class SyncReviewDialog:
         self.fuel_var.set("All")
         self.capacity_var.set("All")
         self.search_var.set("")
+        self.limit_var.set("")
         self.apply_filters()
     
     def sync_selected(self):
