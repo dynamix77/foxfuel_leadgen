@@ -1,0 +1,19 @@
+PF_NAME,PF_SITE_ID,LOCAD_PF_ADDRESS_1,LOCAD_PF_ADDRESS_2,LOCAD_LOCAD_PF_CITY,LOCAD_PF_STATE,LOCAD_PF_ZIP_CODE,PF_COUNTY_NAME,SUBSTANCE_CODE,CAPACITY,STATUS_CODE
+Test Facility DIESL,10001,123 Main Street,,Philadelphia,PA,19101,Philadelphia,DIESL,15000,C
+Test Facility BIDSL,10002,456 Oak Avenue,,Willow Grove,PA,19090,Montgomery,BIDSL,25000,C
+Test Facility HO,10003,789 Pine Road,,West Chester,PA,19380,Chester,HO,8000,C
+Test Facility KERO,10004,321 Elm Street,,Media,PA,19063,Delaware,KERO,12000,C
+Test Facility GAS,10005,654 Maple Drive,,Philadelphia,PA,19102,Philadelphia,GAS,5000,T
+Test Facility AVGAS,10006,987 Cedar Lane,,Bensalem,PA,19020,Bucks,AVGAS,3000,C
+Test Facility JET,10007,147 Birch Court,,Philadelphia,PA,19103,Philadelphia,JET,18000,C
+Test Facility ETHNL,10008,258 Spruce Way,,Willow Grove,PA,19090,Montgomery,ETHNL,7000,T
+Test Facility HZSUB,10009,369 Willow Street,,West Chester,PA,19380,Chester,HZSUB,999,C
+Test Facility Edge 1000,10010,741 Ash Avenue,,Media,PA,19063,Delaware,DIESL,1000,C
+Test Facility Edge 5000,10011,852 Poplar Road,,Bensalem,PA,19020,Bucks,DIESL,5000,C
+Test Facility Edge 10000,10012,963 Hickory Lane,,Philadelphia,PA,19101,Philadelphia,DIESL,10000,C
+Test Facility Edge 20000,10013,159 Chestnut Drive,,Willow Grove,PA,19090,Montgomery,DIESL,20000,C
+Test Facility Edge 25000,10014,357 Walnut Street,,West Chester,PA,19380,Chester,DIESL,25000,C
+Test Facility Duplicate 1,10015,100 Test Road,,Media,PA,19063,Delaware,DIESL,15000,C
+Test Facility Duplicate 2,10016,100 Test Road,,Media,PA,19063,Delaware,DIESL,15000,C
+Test Facility Outside County,10017,999 Out of Area,,Pittsburgh,PA,15201,Allegheny,DIESL,20000,C
+
