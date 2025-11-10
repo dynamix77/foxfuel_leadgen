@@ -1,8 +1,8 @@
 """Configuration management using Pydantic BaseSettings."""
 import os
 from pathlib import Path
-from typing import List, Dict
-from pydantic import Field
+from typing import List, Dict, Optional, Union
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,9 +36,18 @@ class Settings(BaseSettings):
     )
     
     # Counties (comma-separated in env, or default list)
-    counties: List[str] = Field(
-        default_factory=lambda: ["Bucks", "Montgomery", "Philadelphia", "Chester", "Delaware"]
+    counties: Union[List[str], str] = Field(
+        default_factory=lambda: ["Bucks", "Montgomery", "Philadelphia", "Chester", "Delaware"],
+        alias="COUNTIES"
     )
+    
+    @field_validator('counties', mode='before')
+    @classmethod
+    def parse_counties(cls, v):
+        """Parse counties from comma-separated string or list."""
+        if isinstance(v, str):
+            return [c.strip() for c in v.split(",") if c.strip()]
+        return v
     
     # Data paths
     data_dir: Path = Field(default_factory=lambda: Path("./data"))
@@ -120,9 +129,6 @@ class Settings(BaseSettings):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Parse counties from env if provided as comma-separated string
-        if "COUNTIES" in os.environ:
-            self.counties = [c.strip() for c in os.environ["COUNTIES"].split(",")]
         
         # Ensure directories exist
         self.data_dir.mkdir(parents=True, exist_ok=True)
