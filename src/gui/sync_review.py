@@ -3,9 +3,12 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
 import duckdb
+import logging
 from typing import List, Dict, Optional
 from src.config import settings
 from src.crm.sync import is_synced
+
+logger = logging.getLogger(__name__)
 
 
 class SyncReviewDialog:
@@ -249,6 +252,10 @@ class SyncReviewDialog:
             df = df[df["is_diesel_like"] == True]
         elif fuel == "Non-diesel":
             df = df[df["is_diesel_like"] == False]
+        
+        # Debug: log if filtering results in very few records
+        if len(df) < 10 and len(self.all_records) > 100:
+            logger.warning(f"Filtering reduced {len(self.all_records)} records to {len(df)}. Active filters: tier={tier}, sector={sector}, county={county}, fuel={fuel}, capacity={capacity}, search={search}, limit={limit_str}")
         
         # Capacity filter
         capacity = self.capacity_var.get()
