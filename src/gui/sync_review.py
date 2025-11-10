@@ -206,15 +206,27 @@ class SyncReviewDialog:
         self.all_records = conn.execute(query).df()
         conn.close()
         
+        logger.info(f"Loaded {len(self.all_records)} Tier A/B records from database")
+        
+        # Remove duplicates (keep first occurrence)
+        before_dedup = len(self.all_records)
+        self.all_records = self.all_records.drop_duplicates(subset=["facility_id"], keep="first")
+        after_dedup = len(self.all_records)
+        if before_dedup != after_dedup:
+            logger.info(f"Removed {before_dedup - after_dedup} duplicate facility_ids")
+        
         # Filter out already synced
+        before_sync_filter = len(self.all_records)
         self.all_records = self.all_records[
-            ~self.all_records["facility_id"].apply(lambda x: is_synced(x, settings.duckdb_path))
+            ~self.all_records["facility_id"].apply(lambda x: is_synced(str(x), settings.duckdb_path))
         ]
+        after_sync_filter = len(self.all_records)
+        logger.info(f"After filtering synced records: {before_sync_filter} -> {after_sync_filter}")
         
         # Populate filter dropdowns
         self.populate_filters()
         
-        # Apply initial filters
+        # Apply initial filters (should show all records initially)
         self.apply_filters()
         
     def populate_filters(self):
