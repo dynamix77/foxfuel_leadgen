@@ -355,6 +355,15 @@ The system automatically parses the `OrganizationAddress` field:
 **File Placement:**
 Place exported CSV files in `./data/maps_extractor/` directory.
 
+**Automatic File Renaming:**
+The system automatically renames files named `organizations.csv` with timestamps (e.g., `organizations_20251110_143022.csv`) to prevent overwrite conflicts. This happens automatically when you run `build_universe`, or you can manually rename files using:
+
+```bash
+python -m src.jobs.rename_maps_files
+```
+
+This allows you to save multiple exports from the CodeCanyon tool without worrying about filename conflicts.
+
 **Example Usage:**
 ```bash
 # Export from CodeCanyon tool to ./data/maps_extractor/organizations.csv

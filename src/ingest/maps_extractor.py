@@ -67,17 +67,30 @@ def parse_organization_address(address_str: Optional[str]) -> Tuple[Optional[str
     return (address_str, None, None, None)
 
 
-def ingest_maps_extractor(glob_pattern: Optional[str] = None) -> pd.DataFrame:
+def ingest_maps_extractor(glob_pattern: Optional[str] = None, auto_rename: bool = True) -> pd.DataFrame:
     """
     Ingest Google Maps Extractor CSV exports.
 
     Args:
         glob_pattern: Glob pattern for CSV files (defaults to ./data/maps_extractor/*.csv)
+        auto_rename: If True, automatically rename files named "organizations.csv" with timestamps
 
     Returns:
         Standardized DataFrame with places data
     """
     glob_pattern = glob_pattern or "./data/maps_extractor/*.csv"
+    
+    # Auto-rename files to avoid overwrite conflicts
+    if auto_rename:
+        from src.utils.file_rename import auto_rename_maps_extractor_files
+        # Extract directory from glob pattern
+        if "*" in glob_pattern:
+            maps_dir = Path(glob_pattern[:glob_pattern.index("*")]).parent
+        else:
+            maps_dir = Path(glob_pattern).parent
+        if maps_dir.exists():
+            auto_rename_maps_extractor_files(maps_dir, "organizations.csv")
+    
     files = sorted(glob.glob(glob_pattern))
 
     if not files:
